@@ -2,13 +2,7 @@
 
 > **DI 722 – Spatio-Temporal Data Mining | 2025-26 Spring | Project Proposal**
 
-![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python)
-![Dataset](https://img.shields.io/badge/Dataset-NYC%20Yellow%20Taxi%202015-yellow)
-![Task](https://img.shields.io/badge/Task-Regression-green)
-![H3](https://img.shields.io/badge/DGGS-H3%20Hexagonal%20Grid-orange)
-![Status](https://img.shields.io/badge/Status-Proposal%20Stage-lightgrey)
-
----
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/aakcaya/nyc-taxi-spatio-temporal/blob/main/analiz_ve_harita.ipynb)
 
 ## 📋 Table of Contents
 
