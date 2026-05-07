@@ -2,7 +2,7 @@
 
 > **DI 722 – Spatio-Temporal Data Mining | 2025-26 Spring | Project Proposal**
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/aakcaya/nyc-taxi-spatio-temporal/blob/main/analiz_ve_harita.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/aakcaya/nyc-taxi-spatio-temporal/blob/main/regression_and_h3.ipynb)
 
 ## 📋 Table of Contents
 
