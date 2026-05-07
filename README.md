@@ -10,8 +10,6 @@
 
 ---
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/aakcaya/nyc-taxi-spatio-temporal/blob/main/analiz_ve_harita.ipynb)
-
 ## 📋 Table of Contents
 
 1. [Introduction & Motivation](#1-introduction--motivation)
