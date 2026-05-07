@@ -1,4 +1,4 @@
-# 🚕 Spatio-Temporal Analysis of NYC Yellow Taxi Trips
+# Spatio-Temporal Analysis of NYC Yellow Taxi Trips
 
 > **DI 722 – Spatio-Temporal Data Mining | 2025-26 Spring | Project Proposal**
 
