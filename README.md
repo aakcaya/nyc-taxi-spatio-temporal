@@ -4,7 +4,7 @@
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/aakcaya/nyc-taxi-spatio-temporal/blob/main/regression_and_h3.ipynb)
 
-## 📋 Table of Contents
+## Table of Contents
 
 1. [Introduction & Motivation](#1-introduction--motivation)
 2. [Dataset](#2-dataset)
@@ -195,7 +195,7 @@ rmsle = np.sqrt(np.mean((np.log1p(y_pred) - np.log1p(y_test))**2))
 
 ### Paper 1 — Co-clustering of Manhattan Taxi Mobility Patterns
 
-> ✅ Published after 2020 &nbsp;|&nbsp; ✅ More than 20 citations
+> Published after 2020 &nbsp;|&nbsp; More than 20 citations
 
 **Title:** A Spatio-Temporal Co-Clustering Framework for Discovering Mobility Patterns: A Study of Manhattan Taxi Data
 
@@ -218,7 +218,7 @@ This paper proposes a co-clustering framework that simultaneously groups both sp
 
 ### Paper 2 — DBSCAN+ for Taxi Hotspot Detection
 
-> ✅ Published after 2020
+> Published after 2020
 
 **Title:** A Rapid Density Method for Taxi Passengers Hot Spot Recognition and Visualization Based on DBSCAN+
 
@@ -240,7 +240,7 @@ This paper addresses a key limitation of standard DBSCAN when applied to large-s
 
 ### Paper 3 — STAR Models for NYC Taxi Demand Forecasting
 
-> ✅ More than 20 citations
+> More than 20 citations
 
 **Title:** Spatio-Temporal Modeling of Yellow Taxi Demands in New York City Using Generalized STAR Models
 
@@ -376,15 +376,6 @@ The baseline explains **62.7%** of duration variance using only 6 simple feature
 
 ---
 
-## 8. Roadmap to Final Project
-
-| Phase | Period | Goal | Methods |
-|---|---|---|---|
-| **Phase 1** ✅ | April 2026 | Baseline & EDA | Linear Regression, data profiling |
-| **Phase 2** 🔄 | May 2026 | H3 Feature Engineering | h3-py, spatial aggregation, k-ring |
-| **Phase 3** 📅 | May–Jun 2026 | Advanced Modeling | XGBoost, Random Forest, DBSCAN+ |
-| **Phase 4** 📅 | June 2026 | Analysis & Reporting | Feature importance, sensitivity study |
-
 ### Planned Improvements over Baseline
 
 1. **H3 spatial features** — add pickup cell demand, neighbor cell averages (k=1 ring)
@@ -397,44 +388,14 @@ The baseline explains **62.7%** of duration variance using only 6 simple feature
 
 ---
 
-## 9. Repository Structure
-
-```
-📁 nyc-taxi-spatio-temporal/
-├── 📄 README.md                  ← this file (proposal report)
-├── 📁 data/
-│   ├── download_instructions.md  ← dataset is too large to commit; instructions here
-│   └── sample_jan2015.csv        ← 10,000-row sample for quick testing
-├── 📁 notebooks/
-│   ├── 01_eda.ipynb              ← exploratory data analysis
-│   ├── 02_preprocessing.ipynb    ← cleaning & feature engineering
-│   ├── 03_baseline_lr.ipynb      ← linear regression baseline
-│   ├── 04_h3_features.ipynb      ← H3 spatial feature engineering
-│   └── 05_advanced_models.ipynb  ← XGBoost + DBSCAN+ (final project)
-├── 📁 src/
-│   ├── preprocess.py             ← reusable preprocessing functions
-│   ├── h3_utils.py               ← H3 indexing and aggregation helpers
-│   ├── baseline.py               ← baseline model training and evaluation
-│   └── advanced.py               ← advanced model pipeline
-├── 📁 results/
-│   ├── baseline_metrics.json     ← RMSE, MAE, R², RMSLE for baseline
-│   └── figures/                  ← plots and H3 heatmaps
-└── 📄 requirements.txt           ← Python dependencies
-```
-
 ### Requirements
 
 ```
-pandas>=2.0
-numpy>=1.24
-scikit-learn>=1.3
-h3>=3.7
-xgboost>=2.0
-folium>=0.14
-matplotlib>=3.7
-seaborn>=0.12
-pyarrow>=12.0
-jupyter>=1.0
+pandas
+numpy
+scikit-learn
+h3
+folium
 ```
 
 ---
