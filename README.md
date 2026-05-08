@@ -43,7 +43,7 @@ Data Provided By: Taxi and Limousine Commission (TLC)
 
 | Property | Value |
 |---|---|
-| Average Total Trips Per Day | 360,000 |
+| Average Total Trips Per Day | 365,000 |
 | Temporal Coverage | January 1 – January 5, 2015 |
 | Number of Columns | 20 |
 | Rows | Taxi Trip Record |
