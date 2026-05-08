@@ -13,42 +13,40 @@
 5. [Literature Review](#5-literature-review)
 6. [H3 / DGGS Investigation](#6-h3--dggs-investigation)
 7. [Preliminary Results](#7-preliminary-results)
-8. [Roadmap to Final Project](#8-roadmap-to-final-project)
-9. [Repository Structure](#9-repository-structure)
-10. [References](#10-references)
+8. [References](#8-references)
 
 ---
 
 ## 1. Introduction & Motivation
 
-New York City's yellow taxi network generates one of the richest urban mobility datasets in the world. With over **400,000 trips per day**, understanding the spatio-temporal dynamics of taxi demand is critical for:
+New York City's yellow taxi network is one of the world's richest urban mobility datasets. With **over 350,000 trips** per day, understanding the spatial and temporal dynamics of taxi demand is of paramount importance.
 
-- **Fleet management** — optimizing vehicle positioning to meet demand
-- **Passenger experience** — providing accurate ETAs before trip start
-- **Urban planning** — identifying demand hotspots for infrastructure decisions
-- **Dynamic pricing** — matching supply to localized, time-varying demand
+- **Fleet management** — optimizing vehicle positioning for demand management
+- **Passenger experience** — ensuring accurate estimated arrival times
+- **Urban planning** — identifying demand densities for infrastructure decisions
+- **Dynamic pricing** — adjusting supply based on local and time factors
 
 ### Research Question
 
-> *Can we accurately predict NYC taxi trip duration by combining basic temporal features with H3-based spatial aggregation — and does spatial context meaningfully improve over a non-spatial baseline?*
+> *Can we accurately predict New York taxi ride duration and how can we improve upon the results obtained using a baseline model?*
 
-This project uses the **2015 NYC Yellow Taxi Trip Dataset** to answer this question through a progression from a simple linear regression baseline to an H3-enriched gradient boosting model.
+This project uses the **2015 New York Yellow Taxi Ride Dataset** to answer this question, progressing from a simple linear regression baseline model to a more advanced model.
 
 ---
 
 ## 2. Dataset
 
-**Source:** [2015 NYC Yellow Taxi Trip Data – NYC Open Data Portal](https://data.cityofnewyork.us/Transportation/2015-Yellow-Taxi-Trip-Data/2yznsicd/about_data)
+**Source:** [2015 NYC Yellow Taxi Trip Data – NYC Open Data Portal](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page)
+Data Provided By: Taxi and Limousine Commission (TLC)
 
 ### Key Statistics
 
 | Property | Value |
 |---|---|
-| Total Trips | ~146 million |
-| Temporal Coverage | January – December 2015 |
-| Raw File Size | ~6 GB (CSV) |
-| Number of Columns | 18 |
-| Spatial Coverage | All 5 NYC boroughs |
+| Average Total Trips Per Day | 360,000 |
+| Temporal Coverage | January 1 – January 5, 2015 |
+| Number of Columns | 20 |
+| Rows | Taxi Trip Record |
 
 ### Schema (Key Fields)
 
@@ -65,10 +63,10 @@ This project uses the **2015 NYC Yellow Taxi Trip Dataset** to answer this quest
 | `fare_amount` | FLOAT | Base metered fare ($) |
 | `payment_type` | INT | Payment method (cash, card, etc.) |
 
-### Preprocessing Pipeline
+### Preprocessing
 
 ```
-Raw CSV (146M rows)
+Raw CSV Preprocessing
     │
     ├── 1. Filter outliers
     │       Remove trips outside NYC bounding box
@@ -82,23 +80,6 @@ Raw CSV (146M rows)
     │       month         = pickup_datetime.month               (1–12)
     │       is_weekend    = 1 if day_of_week >= 5 else 0
     │       is_rush_hour  = 1 if hour in [7,8,9,17,18,19] else 0
-    │
-    ├── 3. H3 coordinate encoding
-    │       pickup_h3_r7  = h3.geo_to_h3(lat, lon, resolution=7)
-    │       pickup_h3_r8  = h3.geo_to_h3(lat, lon, resolution=8)   ← primary
-    │       pickup_h3_r9  = h3.geo_to_h3(lat, lon, resolution=9)
-    │       (same for dropoff coordinates)
-    │
-    ├── 4. Cell-level statistics (spatial features)
-    │       Per H3 cell per hour:
-    │         - trip_count (demand proxy)
-    │         - mean_duration
-    │         - mean_distance
-    │         - k-ring neighbor averages (k=1)
-    │
-    └── 5. Train / test split
-            Train: January – October 2015  (temporal split, 80%)
-            Test:  November – December 2015 (20%)
 ```
 
 ---
@@ -114,17 +95,16 @@ Raw CSV (146M rows)
 
 ### Why Regression?
 
-Trip duration is a continuous numeric target variable. Regression allows direct interpretation of error in seconds (MAE, RMSE), aligning with real-world operational requirements — e.g., "our ETA estimate is off by ±5 minutes on average."
-
+Trip time is a continuous numerical target variable. Regression allows for a direct interpretation of the margin of error in seconds (MAE, RMSE) and is consistent with real-world operational requirements.
 ---
 
 ## 4. Baseline Method
 
 ### Model: Multiple Linear Regression (OLS)
 
-A baseline method in data mining is a simple, interpretable algorithm that establishes a minimum performance floor against which advanced methods are compared.
+In data mining, the baseline method is a simple, interpretable algorithm that defines the minimum performance baseline against which advanced methods are compared.
 
-**Chosen baseline:** Ordinary Least Squares (OLS) Linear Regression — the simplest possible parametric model for a regression task.
+**The chosen baseline method:** Ordinary Least Squares (OLS) Linear Regression — the simplest parametric model possible for a regression task.
 
 ### Input Features (Baseline)
 
@@ -141,135 +121,16 @@ features = [
 target = 'trip_duration'  # seconds
 ```
 
-### Model Formula
-
-```
-trip_duration = β₀ + β₁·trip_distance + β₂·pickup_hour
-              + β₃·day_of_week + β₄·passenger_count
-              + β₅·is_rush_hour + β₆·is_weekend + ε
-```
-
-### Implementation Sketch
-
-```python
-import pandas as pd
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-import numpy as np
-
-# Load & preprocess (see preprocessing pipeline above)
-df = pd.read_csv('yellow_tripdata_2015-01.csv')
-
-features = ['trip_distance', 'pickup_hour', 'day_of_week',
-            'passenger_count', 'is_rush_hour', 'is_weekend']
-target = 'trip_duration'
-
-X_train, X_test = df_train[features], df_test[features]
-y_train, y_test = df_train[target], df_test[target]
-
-model = LinearRegression()
-model.fit(X_train, y_train)
-
-y_pred = model.predict(X_test)
-
-rmse  = np.sqrt(mean_squared_error(y_test, y_pred))
-mae   = mean_absolute_error(y_test, y_pred)
-r2    = r2_score(y_test, y_pred)
-rmsle = np.sqrt(np.mean((np.log1p(y_pred) - np.log1p(y_test))**2))
-```
-
 ### Why Linear Regression as the Baseline?
 
-- **Interpretable** — coefficients directly show the impact of each feature
-- **Fast** — trains on 100M+ rows in seconds
-- **No hyperparameters** — reproducible, no tuning bias
-- **Establishes a floor** — any advanced model that cannot outperform this is not worth the added complexity
-
+- **Interpretable** — coefficients directly show the effect of each feature
+- **Fast** — trains on large datasets in seconds
+- **Establishes a baseline** — any advanced model that cannot surpass this is not worth the added complexity
 ---
 
 ## 5. Literature Review
 
-> Scopus literature review — 3 papers reviewed. All required criteria satisfied.
-
----
-
-### Paper 1 — Co-clustering of Manhattan Taxi Mobility Patterns
-
-> Published after 2020 &nbsp;|&nbsp; More than 20 citations
-
-**Title:** A Spatio-Temporal Co-Clustering Framework for Discovering Mobility Patterns: A Study of Manhattan Taxi Data
-
-**Authors:** Liu Q., Zheng X., Stanley H. E., Xiao F., Liu W.
-
-**Journal:** *IEEE Access*, Vol. 9, pp. 15221–15236, January 2021
-
-**DOI:** [10.1109/ACCESS.2021.3052795](https://doi.org/10.1109/ACCESS.2021.3052795)
-
-**Summary:**
-This paper proposes a co-clustering framework that simultaneously groups both spatial zones (taxi grid cells) and temporal slots, discovering latent mobility patterns in Manhattan taxi data. Unlike approaches that cluster space and time independently, the co-clustering reveals five distinct mobility pattern types with temporal evolution across morning, afternoon, and evening periods. The framework uses non-negative matrix tri-factorization (NMTF) to decompose an origin-destination demand matrix.
-
-**Relevance to this project:**
-- Uses NYC Manhattan taxi trip data — the same dataset family as our project
-- Directly motivates our approach of treating H3 cells as spatial units and hours as temporal units
-- The identified mobility clusters (e.g., commuter zones, tourist zones) inform our feature engineering strategy
-- Confirms that ignoring the joint spatio-temporal structure leads to poor cluster interpretability
-
----
-
-### Paper 2 — DBSCAN+ for Taxi Hotspot Detection
-
-> Published after 2020
-
-**Title:** A Rapid Density Method for Taxi Passengers Hot Spot Recognition and Visualization Based on DBSCAN+
-
-**Authors:** Huang Z., Gao S., Cai C., Zheng H., Pan Z., Li W.
-
-**Journal:** *Scientific Reports*, Vol. 11, Article 9457, May 2021
-
-**DOI:** [10.1038/s41598-021-88822-3](https://doi.org/10.1038/s41598-021-88822-3)
-
-**Summary:**
-This paper addresses a key limitation of standard DBSCAN when applied to large-scale taxi point data: it is single-threaded and cannot identify cluster centers efficiently. The proposed DBSCAN+ algorithm introduces multi-threaded neighborhood search and density-peak-based cluster center extraction, enabling fast hotspot recognition and time-sliced visualization (AM peak, PM peak, off-peak). Experiments on real GPS taxi datasets show 3–5× speedup over standard DBSCAN with equivalent or better clustering quality.
-
-**Relevance to this project:**
-- Directly motivates moving from simple H3 grid counting to a density-based clustering approach for hotspot identification
-- The time-sliced visualization approach (AM vs. PM vs. weekend) aligns with our temporal demand heatmap analysis plan
-- DBSCAN+ is the planned clustering method for demand hotspot discovery in the advanced phase of this project
-
----
-
-### Paper 3 — STAR Models for NYC Taxi Demand Forecasting
-
-> More than 20 citations
-
-**Title:** Spatio-Temporal Modeling of Yellow Taxi Demands in New York City Using Generalized STAR Models
-
-**Authors:** Safikhani A., Kamga C., Mudigonda S., Faghih S. S., Moghimi B.
-
-**Journal:** *International Journal of Forecasting*, Vol. 36(3), pp. 1138–1148, 2020
-
-**DOI:** [10.1016/j.ijforecast.2020.01.001](https://doi.org/10.1016/j.ijforecast.2020.01.001)
-
-**Summary:**
-This paper applies Generalized Space-Time Autoregressive (STAR) models to predict taxi demand across 63 official NYC taxi zones using the **exact same 2015 NYC Yellow Taxi dataset** used in this project. The key finding is that models ignoring spatial autocorrelation between neighboring zones underperform significantly compared to STAR models that incorporate spatial lag terms. The paper partitions the city into a spatial weight matrix based on zone adjacency and models demand as jointly dependent on both its own history and the history of neighboring zones.
-
-**Relevance to this project:**
-- Uses the same 2015 NYC Yellow Taxi dataset — provides direct benchmark context
-- Empirically demonstrates the value of incorporating spatial neighborhood information, which is exactly what H3 k-ring neighbor features add to our regression model
-- The spatial weight matrix concept maps directly onto H3's k-ring neighbor API (`h3.k_ring(cell_id, k=1)`)
-- RMSLE improvement reported in this work sets a concrete expectation for what spatial features can contribute
-
----
-
-### Literature Review Summary
-
-| # | Authors | Year | Journal | Task | Dataset | Criteria |
-|---|---|---|---|---|---|---|
-| P1 | Liu et al. | 2021 | IEEE Access | Clustering | NYC Manhattan Taxi | >2020 ✅, >20 citations ✅ |
-| P2 | Huang et al. | 2021 | Scientific Reports | Clustering | Real taxi GPS data | >2020 ✅ |
-| P3 | Safikhani et al. | 2020 | Int. J. Forecasting | Regression | **2015 NYC Yellow Taxi** | >20 citations ✅ |
-
----
+a
 
 ## 6. H3 / DGGS Investigation
 
@@ -400,7 +261,7 @@ folium
 
 ---
 
-## 10. References
+## 8. References
 
 1. **Liu Q., Zheng X., Stanley H. E., Xiao F., Liu W.** (2021). A Spatio-Temporal Co-Clustering Framework for Discovering Mobility Patterns: A Study of Manhattan Taxi Data. *IEEE Access*, 9, 15221–15236. https://doi.org/10.1109/ACCESS.2021.3052795
 
