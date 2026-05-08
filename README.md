@@ -165,9 +165,10 @@ Although not required for the baseline method, studies in the literature have ob
 **Resolution 9** was chosen as the primary resolution — a scale fine enough to capture neighborhood-level demand variation, yet coarse enough to have statistically significant travel counts per cell per hour.
 A heat map was created showing the travel density per cell H3 at resolution 9, animated throughout the hours of the day.
 
+[Interactive Heatmap](./h3_map.html)
+
 ![NYC taxi H3](heatmap.png)
 
-[Interactive Heatmap:](./h3_map.html)
 ---
 
 ## 7. Preliminary Results
