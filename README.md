@@ -93,9 +93,8 @@ Raw CSV Preprocessing
 | **Target** | `trip_duration` — total trip duration in seconds |
 | **Evaluation Metrics** | RMSE (primary), MAE, R², RMSLE |
 
-### Why Regression?
+Travel time is a continuous numerical variable. Regression allows for a direct interpretation of the true margin of error (MAE, RMSE) in seconds.
 
-Trip time is a continuous numerical target variable. Regression allows for a direct interpretation of the margin of error in seconds (MAE, RMSE) and is consistent with real-world operational requirements.
 ---
 
 ## 4. Baseline Method
