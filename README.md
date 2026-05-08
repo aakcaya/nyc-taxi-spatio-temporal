@@ -21,10 +21,10 @@
 
 New York City's yellow taxi network is one of the world's richest urban mobility datasets. With **over 350,000 trips** per day, understanding the spatial and temporal dynamics of taxi demand is of paramount importance.
 
-- **Fleet management** — optimizing vehicle positioning for demand management
-- **Passenger experience** — ensuring accurate estimated arrival times
-- **Urban planning** — identifying demand densities for infrastructure decisions
-- **Dynamic pricing** — adjusting supply based on local and time factors
+- **Fleet Management** — optimizing vehicle positioning for demand management
+- **Passenger Experience** — ensuring accurate estimated arrival times
+- **Urban Planning** — identifying demand densities for infrastructure decisions
+- **Dynamic Pricing** — adjusting supply based on local and time factors
 
 ### Research Question
 
