@@ -124,7 +124,7 @@ target = 'trip_duration'  # seconds
 
 - **Interpretable** — coefficients directly show the effect of each feature
 - **Fast** — trains on large datasets in seconds
-- **Establishes a baseline** — any advanced model that cannot surpass this is not worth the added complexity
+- **Establishes a Baseline** — any advanced model that cannot surpass this is not worth the added complexity
 ---
 
 ## 5. Literature Review
@@ -178,11 +178,11 @@ A heat map was created showing the travel density per cell H3 at resolution 9, a
 
 | Property | Value |
 |---|---|
-| Raw record count | 1,824,104 |
-| Records after cleaning | 1,772,575 |
-| Removed record ratio | 2.8% |
-| Training set (80%) | ~1,418,060 records |
-| Test set (20%) | ~354,515 records |
+| Raw Record Count | 1,824,104 |
+| Records After Cleaning | 1,772,575 |
+| Removed Record Ratio | 2.8% |
+| Training Set (80%) | ~1,418,060 records |
+| Test Set (20%) | ~354,515 records |
 
 ### Baseline Model Results
 
