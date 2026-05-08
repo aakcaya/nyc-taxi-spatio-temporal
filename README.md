@@ -130,13 +130,33 @@ target = 'trip_duration'  # seconds
 
 ## 5. Literature Review
 
-a
+### Article 1
+
+**Title:** Predicting Taxi Journey Time Using Machine Learning Techniques Considering Weekends and Holidays (Roy & Rout, 2022)
+
+This study uses January 2015 NYC Yellow Taxi records for journey time estimation. Additionally, Uber data was used to expand the modeling regions. Chi-Square scores were applied for feature selection; variables such as pick-up/drop-off coordinates, time, day of the week, and number of passengers were determined.
+Three machine learning models were compared: Decision Tree Regression (DTR), Random Forest Regression (RFR), and K-Nearest Neighbor Regression (KNNR). The study also hierarchically evaluated the models used, explaining the improvement achieved by other advanced models based on the decision tree structure. Furthermore, the effects of weekends and holidays on journey time were evaluated, demonstrating the importance of temporal relationships.
+
+---
+
+### Article 2
+
+**Title:** A Simple Baseline Method for Travel Time Estimation Using Large-Scale Trip Data (Wang et al., 2019)
+
+This article highlights how efficient complex algorithms based on big data can be compared to more basic methods. Data from the NYC Taxi and Limousine Commission was used for this study. The similarity-based estimation model used for travel time surpasses the estimations of the Bing Maps and Baidu Maps APIs.
+This article directly addresses how to define and construct a "baseline." The main argument of the article is that "a simple but well-designed approach can be powerful." On the other hand, the neighborhood-based method in the article (considering the source-destination region pair) uses region-based statistics instead of raw coordinates, which increases estimation accuracy. This work demonstrates why the transition between baseline and advanced methods is meaningful.
+
+---
+
+### Article 3
+
+**Title:** Spatio-Temporal Modeling of Yellow Taxi Demand in New York City Using Generalized STAR Models (Safikhani et al., 2020)
+
+This study estimates taxi demand using 2015 NYC Yellow Taxi data. The model used is the Generalized Spatio-Temporal Autoregressive (STAR) model. Taxi demand in a region varies not only according to the historical trend of that region but also according to the historical trend of neighboring regions. To model this spatial dependence, a weight matrix and the LASSO method for high-dimensional parameter estimation are used. The STAR model is superior to ARMA and VAR, which are purely time series models, in terms of accuracy and interpretability. The main finding of the article is that the inclusion of spatial neighborhood information in the model significantly improves the quality of the estimate.
+
+---
 
 ## 6. H3 / DGGS Investigation
-
-### What is H3?
-
-**H3** is an open-source Discrete Global Grid System (DGGS) developed by Uber Technologies (2018). It tessellates the Earth's surface with **hexagonal cells** at 16 hierarchical resolution levels.
 
 Key properties that make H3 suitable for this project:
 
@@ -147,57 +167,10 @@ Key properties that make H3 suitable for this project:
 | **Global coverage** | Consistent cell sizes and shapes anywhere on Earth |
 | **Open source** | `h3-py` Python library — `pip install h3` |
 
-### Resolution Comparison for NYC
-
-| H3 Resolution | Avg Cell Area | Approximate Scale | Est. Cells Covering NYC |
-|---|---|---|---|
-| 7 | 5.16 km² | Borough / large neighborhood | ~220 |
-| **8** | **0.74 km²** | **Neighborhood block** ← *primary* | **~1,500** |
-| 9 | 0.11 km² | City block | ~10,500 |
-
-**Resolution 8** is selected as the primary resolution — fine enough to capture neighborhood-level demand variation, coarse enough to have statistically meaningful trip counts per cell per hour.
-
-### H3 Application Plan
-
-```python
-import h3
-
-# Step 1 — Index each trip's pickup and dropoff into H3 cells
-df['pickup_h3_r8']  = df.apply(
-    lambda r: h3.geo_to_h3(r['pickup_latitude'], r['pickup_longitude'], 8), axis=1)
-df['dropoff_h3_r8'] = df.apply(
-    lambda r: h3.geo_to_h3(r['dropoff_latitude'], r['dropoff_longitude'], 8), axis=1)
-
-# Step 2 — Aggregate demand statistics per cell per hour
-cell_stats = (df.groupby(['pickup_h3_r8', 'pickup_hour'])
-                .agg(trip_count   = ('trip_duration', 'count'),
-                     mean_duration = ('trip_duration', 'mean'),
-                     mean_distance = ('trip_distance', 'mean'))
-                .reset_index())
-
-# Step 3 — Attach k-ring neighbor averages (spatial smoothing)
-def get_neighbor_avg(cell_id, hour, stat_df, k=1):
-    neighbors = list(h3.k_ring(cell_id, k))
-    neighbor_stats = stat_df[
-        (stat_df['pickup_h3_r8'].isin(neighbors)) &
-        (stat_df['pickup_hour'] == hour)
-    ]
-    return neighbor_stats['trip_count'].mean()
-
-# Step 4 — Join spatial features back to trip-level dataframe
-df = df.merge(cell_stats, on=['pickup_h3_r8', 'pickup_hour'], how='left')
-
-# Step 5 — Visualize demand heatmap using folium or kepler.gl
-# (H3 cell IDs → GeoJSON polygons → choropleth map)
-```
-
 ### Expected Output: Temporal H3 Demand Heatmap
 
-The heatmap will show trip pickup density per H3 cell at resolution 8, animated across hours of the day, revealing:
-- Morning commuter corridors (Midtown, Grand Central area)
-- Evening leisure zones (Lower Manhattan, Brooklyn)
-- Airport demand spikes (JFK, LGA, EWR)
-- Weekend vs. weekday spatial pattern differences
+**Resolution 9** is selected as the primary resolution — fine enough to capture neighborhood-level demand variation, coarse enough to have statistically meaningful trip counts per cell per hour.
+The heatmap will show trip pickup density per H3 cell at resolution 9, animated across hours of the day.
 
 ---
 
@@ -263,15 +236,11 @@ folium
 
 ## 8. References
 
-1. **Liu Q., Zheng X., Stanley H. E., Xiao F., Liu W.** (2021). A Spatio-Temporal Co-Clustering Framework for Discovering Mobility Patterns: A Study of Manhattan Taxi Data. *IEEE Access*, 9, 15221–15236. https://doi.org/10.1109/ACCESS.2021.3052795
+1. **Roy, B., & Rout, D.** (2022). Predicting Taxi Travel Time Using Machine Learning Techniques Considering Weekend and Holidays. *Lecture Notes in Networks and Systems*, 258–267. https://doi.org/10.1007/978-3-030-96302-6_24
 
-2. **Huang Z., Gao S., Cai C., Zheng H., Pan Z., Li W.** (2021). A Rapid Density Method for Taxi Passengers Hot Spot Recognition and Visualization Based on DBSCAN+. *Scientific Reports*, 11, 9457. https://doi.org/10.1038/s41598-021-88822-3
+2. **Safikhani, A., Kamga, C., Mudigonda, S., Faghih, S. S., & Moghimi, B**. (2020). Spatio-temporal modeling of yellow taxi demands in New York City using generalized STAR models. *International Journal of Forecasting*, 36(3), 1138–1148. https://doi.org/10.1016/j.ijforecast.2018.10.001
 
-3. **Safikhani A., Kamga C., Mudigonda S., Faghih S. S., Moghimi B.** (2020). Spatio-Temporal Modeling of Yellow Taxi Demands in New York City Using Generalized STAR Models. *International Journal of Forecasting*, 36(3), 1138–1148. https://doi.org/10.1016/j.ijforecast.2020.01.001
-
-4. **Brodsky J.** (2018). H3: Uber's Hexagonal Hierarchical Spatial Index. Uber Engineering Blog. https://www.uber.com/blog/h3/
-
-5. **NYC Open Data.** (2015). 2015 Yellow Taxi Trip Data. https://data.cityofnewyork.us/Transportation/2015-Yellow-Taxi-Trip-Data/2yznsicd/about_data
+3. **Wang, H., Tang, X., Kuo, Y.-H., Kifer, D., & Li, Z.** (2019). A Simple Baseline for Travel Time Estimation using Large-scale Trip Data. *ACM Transactions on Intelligent Systems and Technology*, 10(2), 1–22. https://doi.org/10.1145/3293317
 
 ---
 
