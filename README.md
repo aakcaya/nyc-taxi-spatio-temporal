@@ -173,49 +173,43 @@ A heat map was created showing the travel density per cell H3 at resolution 9, a
 
 ## 7. Preliminary Results
 
-> Based on exploratory analysis of the **January 2015** monthly file (~12.7M trips).
+> Analysis is based on 5 CSV files covering the first 5 days of January 2015 (January 1–5, 2015).
 
-### Dataset Statistics (January 2015 Sample)
+### Dataset Statistics
 
-| Metric | Value |
+| Property | Value |
 |---|---|
-| Total Trips | 12,748,986 |
-| Mean Trip Duration | 15.9 min (954 sec) |
-| Median Trip Duration | 11.8 min |
-| Mean Trip Distance | 2.98 miles |
-| Peak Pickup Hour | 6–7 PM (Friday) |
-| Top Pickup Borough | Manhattan (82% of trips) |
-| Outliers Removed | ~3.2% of records |
-| Null Values Found | 0.18% (dropped) |
+| Raw record count | 1,824,104 |
+| Records after cleaning | 1,772,575 |
+| Removed record ratio | 2.8% |
+| Training set (80%) | ~1,418,060 records |
+| Test set (20%) | ~354,515 records |
 
-### Temporal Pattern Observation
+### Baseline Model Results
 
-Pickup counts (normalized, per hour) show a clear **bimodal weekday pattern** (morning commute peak ~8 AM, evening peak ~6 PM) contrasted with a **unimodal Friday/Saturday night pattern** peaking around 10 PM. This temporal structure must be captured by any model that aims to predict duration accurately.
+**Model:** Multiple Linear Regression (OLS)
 
-### Baseline Linear Regression Results
-
-| Metric | Baseline (Linear Regression) | Target (Advanced Method) |
+| Metric | Value | Description |
 |---|---|---|
-| **RMSE** | 520 sec (8.7 min) | < 310 sec |
-| **MAE** | 312 sec (5.2 min) | < 185 sec |
-| **R²** | 0.627 | > 0.85 |
-| **RMSLE** | 0.482 | < 0.32 |
+| **RMSE** | 309.6 sec (5.2 min) | Error magnitude — penalizes large errors more heavily |
+| **MAE** | 215.0 sec (3.6 min) | Typical absolute error |
+| **R²** | 0.7030 | Model explains 70.3% of the variance in trip duration |
+| **RMSLE** | 0.4748 | Log-scale error — evaluates short and long trips more equally |
+
+### Model Coefficients
+
+| Feature | Coefficient | Interpretation |
+|---|---|---|
+| `trip_distance` | +111.008 | Each mile added adds approximately 111 seconds. It's the strongest predictive factor. |
+| `pickup_hour` | +1.815 | Travel duration increases slightly as the hour advances. |
+| `day_of_week` | −8.132 | Later days of the week show marginally shorter trips. |
+| `passenger_count` | +3.821 | Passenger count has a negligible effect on duration. |
+| `is_rush_hour` | +1.387 | Weak independent effect due to overlap with `pickup_hour`. |
+| `is_weekend` | −0.753 | Weekend effect is statistically negligible. |
 
 ### Interpretation
 
-The baseline explains **62.7%** of duration variance using only 6 simple features. The dominant predictor is `trip_distance` (β₁ ≈ 185 sec/mile), while temporal features add modest but statistically significant signal. The residuals show clear spatial structure — longer-than-predicted durations cluster around Midtown during rush hours — confirming that **spatial features are the primary missing component**.
-
----
-
-### Planned Improvements over Baseline
-
-1. **H3 spatial features** — add pickup cell demand, neighbor cell averages (k=1 ring)
-2. **XGBoost regressor** — captures nonlinear interactions between features
-3. **Temporal embeddings** — cyclical encoding of hour and day (`sin`/`cos` transforms)
-4. **DBSCAN+ demand clustering** — identify and label demand hotspot zones as categorical features
-5. **Multi-resolution comparison** — test H3 resolutions 7, 8, 9 and select the best
-
-**Expected RMSE improvement: 520 sec → ~310 sec &nbsp;|&nbsp; R²: 0.627 → > 0.85**
+The basic model explains **70.3%** of the journey time variance using only 6 non-spatial features. The dominant predictor is `journey_distance`, and the main limitation of the model is that it is **completely devoid of spatial context**. The near-zero contribution of the `peak_hour_or_no_peak_hour` feature reveals that linear regression fails to capture the interaction effects between features; for example, the combined effect of peak hours and high-density passenger pickup areas such as Midtown Manhattan. This finding directly encourages the use of H3-based spatial features and advanced models in the later phases of the project.
 
 ---
 
