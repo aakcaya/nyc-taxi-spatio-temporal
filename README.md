@@ -158,19 +158,12 @@ This study estimates taxi demand using 2015 NYC Yellow Taxi data. The model used
 
 ## 6. H3 / DGGS Investigation
 
-Key properties that make H3 suitable for this project:
+A hexagon is ideal for spatial machine learning models because all six of its neighbors are equidistant from the center. It's used to extract meaningful insights from large datasets based on neighborhood relationships. It's an advantageous unit of analysis due to the fact that all neighboring cells are the same distance from each other.
 
-| Property | Description |
-|---|---|
-| **Uniform neighbor distance** | All 6 neighbors of a hexagon are equidistant from its centroid — ideal for spatial ML features |
-| **Hierarchical** | A resolution-7 cell contains exactly 7 resolution-8 children — enables multi-scale analysis |
-| **Global coverage** | Consistent cell sizes and shapes anywhere on Earth |
-| **Open source** | `h3-py` Python library — `pip install h3` |
+Although not required for the baseline method, studies in the literature have observed that neighborhood relationships can also be included in the evaluations using an analysis unit. These advanced models, created by taking spatial variations into account, contain higher accuracy values. If the project is to be carried out with advanced models, h3 cell blocks would be a good choice of analysis unit.
 
-### Expected Output: Temporal H3 Demand Heatmap
-
-**Resolution 9** is selected as the primary resolution — fine enough to capture neighborhood-level demand variation, coarse enough to have statistically meaningful trip counts per cell per hour.
-The heatmap will show trip pickup density per H3 cell at resolution 9, animated across hours of the day.
+**Resolution 9** was chosen as the primary resolution — a scale fine enough to capture neighborhood-level demand variation, yet coarse enough to have statistically significant travel counts per cell per hour.
+A heat map was created showing the travel density per cell H3 at resolution 9, animated throughout the hours of the day.
 
 ---
 
