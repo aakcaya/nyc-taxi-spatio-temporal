@@ -140,7 +140,7 @@ Three machine learning models were compared: Decision Tree Regression (DTR), Ran
 
 ### Article 2
 
-**Title:** A Simple Baseline Method for Travel Time Estimation Using Large-Scale Trip Data (Wang et al., 2019)
+**Title:** A Simple Baseline for Travel Time Estimation Using Large-Scale Trip Data (Wang et al., 2019)
 
 This article highlights how efficient complex algorithms based on big data can be compared to more basic methods. Data from the NYC Taxi and Limousine Commission was used for this study. The similarity-based estimation model used for travel time surpasses the estimations of the Bing Maps and Baidu Maps APIs.
 This article directly addresses how to define and construct a "baseline." The main argument of the article is that "a simple but well-designed approach can be powerful." On the other hand, the neighborhood-based method in the article (considering the source-destination region pair) uses region-based statistics instead of raw coordinates, which increases estimation accuracy. This work demonstrates why the transition between baseline and advanced methods is meaningful.
@@ -208,7 +208,7 @@ A heat map was created showing the travel density per cell H3 at resolution 9, a
 
 ### Interpretation
 
-The basic model explains **70.3%** of the journey time variance using only 6 non-spatial features. The dominant predictor is `journey_distance`, and the main limitation of the model is that it is **completely devoid of spatial context**. The near-zero contribution of the `peak_hour_or_no_peak_hour` feature reveals that linear regression fails to capture the interaction effects between features; for example, the combined effect of peak hours and high-density passenger pickup areas such as Midtown Manhattan. This finding directly encourages the use of H3-based spatial features and advanced models in the later phases of the project.
+The basic model explains **70.3%** of the journey time variance using only 6 non-spatial features. The dominant predictor is `trip_distance`, and the main limitation of the model is that it is **completely devoid of spatial context**. The near-zero contribution of the `is_rush_hour` feature reveals that linear regression fails to capture the interaction effects between features; for example, the combined effect of peak hours and high-density passenger pickup areas such as Midtown Manhattan. This finding directly encourages the use of H3-based spatial features and advanced models in the later phases of the project.
 
 ---
 
@@ -226,11 +226,11 @@ folium
 
 ## 8. References
 
-1. **Roy, B., & Rout, D.** (2022). Predicting Taxi Travel Time Using Machine Learning Techniques Considering Weekend and Holidays. *Lecture Notes in Networks and Systems*, 258–267. https://doi.org/10.1007/978-3-030-96302-6_24
+**Roy, B., & Rout, D.** (2022). Predicting Taxi Travel Time Using Machine Learning Techniques Considering Weekend and Holidays. *Lecture Notes in Networks and Systems*, 258–267. https://doi.org/10.1007/978-3-030-96302-6_24
 
-2. **Safikhani, A., Kamga, C., Mudigonda, S., Faghih, S. S., & Moghimi, B**. (2020). Spatio-temporal modeling of yellow taxi demands in New York City using generalized STAR models. *International Journal of Forecasting*, 36(3), 1138–1148. https://doi.org/10.1016/j.ijforecast.2018.10.001
+**Safikhani, A., Kamga, C., Mudigonda, S., Faghih, S. S., & Moghimi, B**. (2020). Spatio-temporal modeling of yellow taxi demands in New York City using generalized STAR models. *International Journal of Forecasting*, 36(3), 1138–1148. https://doi.org/10.1016/j.ijforecast.2018.10.001
 
-3. **Wang, H., Tang, X., Kuo, Y.-H., Kifer, D., & Li, Z.** (2019). A Simple Baseline for Travel Time Estimation using Large-scale Trip Data. *ACM Transactions on Intelligent Systems and Technology*, 10(2), 1–22. https://doi.org/10.1145/3293317
+**Wang, H., Tang, X., Kuo, Y.-H., Kifer, D., & Li, Z.** (2019). A Simple Baseline for Travel Time Estimation using Large-scale Trip Data. *ACM Transactions on Intelligent Systems and Technology*, 10(2), 1–22. https://doi.org/10.1145/3293317
 
 ---
 
