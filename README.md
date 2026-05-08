@@ -166,6 +166,7 @@ Although not required for the baseline method, studies in the literature have ob
 A heat map was created showing the travel density per cell H3 at resolution 9, animated throughout the hours of the day.
 
 ![NYC taxi H3](heatmap.png)
+
 [Interactive Heatmap:](./h3_map.html)
 ---
 
