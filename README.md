@@ -155,45 +155,11 @@ target = 'trip_duration'  # seconds
 **Title:** Predicting Taxi Journey Time Using Machine Learning Techniques
 Considering Weekends and Holidays
 
-**Dataset and Setup:**
-This study uses **January 2015 NYC Yellow Cab records** alongside Uber trip
-data — the same primary dataset as this project. Feature selection was
-performed using Chi-Square scoring, which ranks features by their statistical
-dependence on the target variable. The selected features include pickup and
-dropoff coordinates, time of day, day of week, and passenger count.
-
-**Models Applied:**
-Three models were compared:
-
-- **Decision Tree Regression (DTR):** Splits the data recursively based on
-  feature thresholds. Interpretable, but prone to overfitting on training data.
-- **Random Forest Regression (RFR):** An ensemble of hundreds of independently
-  trained decision trees, each trained on a random subset of the data. Averaging
-  their predictions reduces variance and overfitting. A genuine machine learning
-  model with a real training process.
-- **K-Nearest Neighbor Regression (KNNR):** For a new trip, finds the K most
-  similar historical trips in the feature space and returns their average
-  duration. No training phase — the data itself acts as the model. Similarity
-  is measured by Euclidean distance in the feature vector space, not geographic
-  distance.
-
-**Results:**
-Both RFR and KNNR exceeded the Kaggle benchmark established for the NYC taxi
-trip duration prediction task. The paper hierarchically demonstrates that more
-sophisticated models improve upon simpler ones, and explicitly quantifies the
-contribution of weekend and holiday flags to prediction accuracy.
+This study uses January 2015 NYC Yellow Taxi records for journey time estimation. Additionally, Uber data was used to expand the modeling regions. Chi-Square scores were applied for feature selection; variables such as pick-up/drop-off coordinates, time, day of the week, and number of passengers were determined.
+Three machine learning models were compared: Decision Tree Regression (DTR), Random Forest Regression (RFR), and K-Nearest Neighbor Regression (KNNR). The study also hierarchically evaluated the models used, explaining the improvement achieved by other advanced models based on the decision tree structure. Furthermore, the effects of weekends and holidays on journey time were evaluated, demonstrating the importance of temporal relationships.
 
 **Relevance to This Project:**
-This paper provides the most direct methodological parallel to our work —
-same dataset, same prediction task, overlapping feature set. The confirmed
-superiority of tree-based methods over linear models on this specific dataset
-is the primary motivation for choosing XGBoost in our advanced stage. The
-paper also validates our use of `is_weekend` and `is_rush_hour` as binary
-temporal features, and demonstrates that the performance gap between linear
-and tree-based models is attributable to the latter's ability to capture
-nonlinear interactions — for example, the combined effect of peak hour and
-high-density pickup zones that linear regression treats as independent additive
-contributions.
+This article presents methodological parallels with my work — the same forecasting task and the same dataset. Validating the superiority of tree-based methods over linear models on this dataset was the primary motivation for choosing XGBoost as the enhanced method. The article also validates our use of the `is_weekend` and `is_rush_hour` variables and demonstrates that the performance difference between linear and tree-based models stems from the difference in their ability to capture nonlinear interactions.
 
 ---
 
@@ -202,46 +168,11 @@ contributions.
 **Title:** A Simple Baseline for Travel Time Estimation Using Large-Scale
 Trip Data
 
-**Dataset and Setup:**
-The study uses 173 million NYC taxi trips from the Taxi and Limousine
-Commission — the same data source, at far larger volume. The research
-question is deliberately counterintuitive: rather than asking which complex
-algorithm performs best, it asks whether a well-designed simple method powered
-by large data can match or exceed complex models.
+This article highlights how efficient complex algorithms based on big data can be compared to more basic methods. Data from the NYC Taxi and Limousine Commission was used for this study. The similarity-based estimation model used for travel time surpasses the estimations of the Bing Maps and Baidu Maps APIs.
+This article directly addresses how to define and construct a "baseline." The main argument of the article is that "a simple but well-designed approach can be powerful." On the other hand, the neighborhood-based method in the article (considering the source-destination region pair) uses region-based statistics instead of raw coordinates, which increases estimation accuracy. This work demonstrates why the transition between baseline and advanced methods is meaningful.
 
-**Model Applied:**
-The proposed method is a **neighbor-based estimator** — not a machine learning
-model in the traditional sense. For a new trip from origin zone A to destination
-zone B at hour T, the system retrieves all historical trips with the same origin
-zone, destination zone, and hour bucket, then returns their average duration
-as the prediction. No parameters are learned; the historical data is the model.
-
-This approach differs fundamentally from KNN regression despite a superficial
-resemblance. KNN measures similarity in raw feature space — treating coordinates
-as plain numbers — and finds similar trips globally across the entire dataset.
-The neighbor-based estimator first converts coordinates into predefined
-geographic zones, then searches only within matching zone pairs. The similarity
-criterion is geographic membership, not numerical distance. This distinction is
-crucial: the zone-level approach explicitly encodes spatial structure, while KNN
-only approximates it numerically.
-
-**Results:**
-The method outperforms both Bing Maps and Baidu Maps API travel time estimates
-on out-of-sample NYC trips. The authors argue that this result holds because
-the method captures the joint distribution of origin, destination, and time —
-exactly the structure that matters for urban travel time.
-
-**Relevance to This Project:**
-This paper provides the conceptual foundation for our spatial feature
-engineering strategy. The key insight — that region-level statistics, not raw
-coordinates, drive prediction accuracy — is directly implemented in our
-`cell_trip_count` and `cell_mean_duration` features. When we assign each trip
-to an H3 or square grid cell and attach that cell's historical statistics, we
-are operationalizing the same principle: replacing coordinate-level specificity
-with zone-level distributional knowledge. The paper also justifies why both
-H3 and square grid cells improve prediction over the non-spatial baseline —
-any consistent spatial partitioning that groups trips with similar origin
-characteristics produces more informative features than raw coordinates alone.
+**Relevance to This Project:** 
+By assigning each trip to a square grid or H3 cell and adding the historical statistics of that cell, consistent with the application in this study, we are replacing coordinate-level specificity with information on the distribution at the region level. The paper also explains why the use of both H3 and square grid cells provides an improvement over the baseline. The system, which groups similar trips and consistently records spatial division, is superior to a model that works only with raw coordinates.
 
 ---
 
@@ -250,50 +181,10 @@ characteristics produces more informative features than raw coordinates alone.
 **Title:** Spatio-Temporal Modeling of Yellow Taxi Demands in New York City
 Using Generalized STAR Models
 
-**Dataset and Setup:**
-This study uses the **2015 NYC Yellow Taxi dataset** — the exact same source
-as this project. The prediction task is different from ours: the authors
-forecast **taxi demand** (trip count per zone per time period) rather than
-individual trip duration. This distinction matters for interpretation but the
-spatial methodology is directly applicable.
-
-**Model Applied:**
-The proposed model is a **Generalized Space-Time AutoRegressive (STAR)** model.
-Classical time series models such as ARMA assume that a zone's future demand
-depends only on its own past. STAR extends this by adding a **spatial lag
-term**: demand in zone A at time T is modeled as a function of both A's own
-history and the recent demand of A's geographic neighbors, weighted by
-proximity.
-
-Formally: Demand(zone A, t) = φ₁·Demand(zone A, t−1)
-
-+ λ·Σⱼ wⱼ·Demand(neighbor j, t−1) + ε
-where `wⱼ` is the spatial weight assigned to neighbor `j`. Because the number
-of parameters grows very large with many zones, **LASSO regularization** is
-applied to shrink irrelevant spatial coefficients to zero, retaining only
-the strongest neighborhood relationships.
-
-This is a statistical model, not a machine learning model — it assumes linear
-spatial relationships and requires a predefined weight matrix. It cannot capture
-nonlinear interactions between features.
-
-**Results:**
-STAR outperforms both ARMA and VAR on out-of-sample demand forecasting across
-NYC taxi zones. The improvement is largest in high-density, high-spillover
-zones such as Midtown Manhattan, where neighboring zone activity strongly
-predicts local demand.
+This study estimates taxi demand using 2015 NYC Yellow Taxi data. The model used is the Generalized Spatio-Temporal Autoregressive (STAR) model. Taxi demand in a region varies not only according to the historical trend of that region but also according to the historical trend of neighboring regions. To model this spatial dependence, a weight matrix and the LASSO method for high-dimensional parameter estimation are used. The STAR model is superior to ARMA and VAR, which are purely time series models, in terms of accuracy and interpretability. The main finding of the article is that the inclusion of spatial neighborhood information in the model significantly improves the quality of the estimate.
 
 **Relevance to This Project:**
-This paper provides the theoretical justification for our neighbor-based
-spatial features (`neighbor_avg_demand`, k-ring averaging). The STAR model
-formally demonstrates that a zone's behavior is shaped by its geographic
-neighbors — ignoring this spatial dependency degrades forecast quality.
-Our implementation translates this insight into a simpler but effective
-feature engineering step: for each pickup cell, the average historical demand
-of its k=1 surrounding cells is computed from the training set and attached
-as a model input. The use of the 2015 NYC dataset also means the spatial
-demand patterns documented in this paper — including the Midtown dominance
-and borough-level spillover effects — are directly present in our training data.
+This article provides the theoretical rationale for the neighbor-based spatial features (`neighbor_avg_demand`, k-ring average) that I use. The STAR model reveals that behavior in a region is shaped by its neighbors. Considering this spatial dependence improves prediction quality. My application calculates the average historical demand of k=1 cells surrounding each cell from the training set and adds it as model input.
 
 ---
 
@@ -409,9 +300,10 @@ All spatial reference grid systems used in the project — both square and H3 he
 
 Each trip was matched to its corresponding square grid and H3 cell via **spatial join** (`gpd.sjoin`), enabling a fair comparison for topologies at identical scales.
 
-[Interactive Heatmap](https://aakcaya.github.io/nyc-taxi-spatio-temporal/h3_map.html)
+**Resolution 9** was chosen as the primary resolution — a scale fine enough to capture neighborhood-level demand variation, yet coarse enough to have statistically significant travel counts per cell per hour.
+A heat map was created showing the travel density per cell H3 at resolution 9, animated throughout the hours of the day.
 
-![NYC taxi H3](heatmap.png)
+[Interactive Heatmaps](https://aakcaya.github.io/nyc-taxi-spatio-temporal/comparison_map.html) 
 
 ---
 
@@ -436,25 +328,25 @@ Each trip was matched to its corresponding square grid and H3 cell via **spatial
 
 | Metric | Value |
 |---|---|
-| **RMSE** | 5.120 min (307.2 sec) |
-| **MAE** | 3.572 min (214.3 sec) |
-| **R²** | 0.705 |
-| **RMSLE** | 0.474 |
+| **RMSE** | 5.120 min (307.2 sec) | Error magnitude — penalizes large errors more heavily |
+| **MAE** | 3.572 min (214.3 sec) | Typical absolute error |
+| **R²** | 0.705 | Model explains 70.5% of the variance in trip duration |
+| **RMSLE** | 0.474 | Log-scale error — evaluates short and long trips more equally |
 
 ### Model Coefficients
 
 | Feature | Coefficient | Interpretation |
 |---|---|---|
-| `trip_distance` | +111.008 | Each additional mile adds ~111 seconds. Dominant predictor. |
-| `pickup_hour` | +1.815 | Duration increases slightly as the hour advances. |
+| `trip_distance` | +111.008 | Each mile added adds approximately 111 seconds. It's the strongest predictive factor. |
+| `pickup_hour` | +1.815 | Travel duration increases slightly as the hour advances. |
 | `day_of_week` | −8.132 | Later days of the week show marginally shorter trips. |
 | `passenger_count` | +3.821 | Passenger count has negligible effect. |
-| `is_rush_hour` | +1.387 | Near-zero independent contribution — overlaps with `pickup_hour`. |
+| `is_rush_hour` | +1.387 | Weak independent effect due to overlap with `pickup_hour`. |
 | `is_weekend` | −0.753 | Weekend effect is statistically negligible. |
 
 ### Interpretation
 
-The model explains **70.5%** of trip duration variance with 6 non-spatial features. The near-zero `is_rush_hour` contribution reveals that linear regression cannot capture interaction effects — for example, rush hour in Midtown vs. rush hour in outer boroughs behaves very differently, but the model has no way to distinguish them. This is the core motivation for adding spatial cell features.
+The basic model explains **70.5%** of the journey time variance using only 6 non-spatial features. The dominant predictor is `trip_distance`, and the main limitation of the model is that it is **completely devoid of spatial context**. The near-zero contribution of the `is_rush_hour` feature reveals that linear regression fails to capture the interaction effects between features; for example, the combined effect of peak hours and high-density passenger pickup areas such as Midtown Manhattan. This finding directly encourages the use of H3-based spatial features and advanced models in the later phases of the project.
 
 ---
 
