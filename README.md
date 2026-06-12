@@ -451,6 +451,8 @@ This section documents the methodological evolution of the project, highlighting
 | 4 — QGIS Grids | Pre-computed static grids | — | *Grid Integrity* |
 | 5 — Multi-scale | Res 8 / 9 / 10, H3 + Square | **3.160 min** *(Res 9 Sq)* | 5.359 min |
 
+![Feature Importance](https://aakcaya.github.io/nyc-taxi-spatio-temporal/feature_importance.png)
+
 *Final Methodological Note:* The inclusion of spatial features consistently outperformed the non-spatial baseline. Furthermore, visualizing the model's decision-making process confirms that spatial demand indicators heavily influence the XGBoost tree splits. 
 
 ---
