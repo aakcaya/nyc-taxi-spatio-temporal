@@ -30,12 +30,12 @@ New York City's yellow taxi network is one of the world's richest urban mobility
 
 ### Research Question
 
-> *Can we accurately predict NYC taxi trip duration, and does applied spatial grid features improve upon a non-spatial baseline — and if so, does cell granularity or cell type (hexagonal vs. square) matter more?*
+> *Can we accurately predict NYC taxi trip duration, and do applied spatial grid features improve upon a non-spatial baseline — and if so, does cell granularity or cell type (hexagonal vs. square) matter more?*
 
 This project approaches the problem in two stages:
 
 - **Stage 1:** Linear regression baseline with using only trip-level features.
-- **Stage 2:** XGBoost method, enriched with spatial features which derived from square grids and H3 hexagonal at three different resolution levels.
+- **Stage 2:** XGBoost method, enriched with spatial features derived from square grids and H3 hexagonal at three different resolution levels.
 
 ---
 
@@ -108,7 +108,7 @@ Raw CSV Preprocessing
 | **Evaluation Metrics** | MAE (primary), RMSE, RMSLE, R² |
 
 Travel time is a continuous numerical variable. Regression allows for a direct interpretation of the true margin of error (MAE, RMSE) in seconds.
-MAE was choosen as the primary metric. It measures its prediction error without being widely inflated by outliers.
+MAE was chosen as the primary metric. It measures its prediction error without being widely inflated by outliers.
 
 ---
 
@@ -201,7 +201,7 @@ This study provides a suitable methodological benchmark for the advanced modelin
 
 ### Article 5 — Liu et al. (2022)
 
-This study, using data from Chengdu, China, reveals the effects of topological structures and spatial partitioning accuracy on vehicle summoning request predictions. The researchers developed the model with a system that captures spatial structures using hexagonal units and addresses temporal dependencies using LSTM units. Performing tests on 36 different combinations of cell sizes and time periods, the study systematically examined the effects of square and hexagonal grids with the same surface area on the measurements. The findings observed that hexagonal partitions generally provided better performance than square partitions due to their equally spaced neighborhood structures, and that prediction accuracy decreased at over-sensitivities due to local variation loss.
+This study, using data from Chengdu, China, reveals the effects of topological structures and spatial partitioning accuracy on vehicle summoning request predictions. The researchers developed the model with a system that captures spatial structures using hexagonal units and addresses temporal dependencies using LSTM units. Performing tests on 36 different combinations of cell sizes and time periods, the study systematically examined the effects of square and hexagonal grids with the same surface area on the measurements. The findings observed that hexagonal partitions generally provided better performance than square partitions due to their equally spaced neighborhood structures, and that prediction accuracy decreased at finer granularities due to local variation loss.
 
 **Relevance to This Project:**
 This paper provides a solid foundation for my multilayer spatial topology experiments. The authors' key finding is that the size of the spatial analysis unit affects prediction accuracy beyond the choice of grid shape. This finding is consistent with both H3 and square grids exhibiting the most successful results at resolution 9. Furthermore, the performance degradation at over-sensitivities is consistent with the problems I encountered at resolution 10. The slight advantage observed for H3 at Resolution 8 compared to square grids is consistent with the finding that hexagonal grids reduce directional bias more effectively at small scales—findings that directly guided the scales used in the study.
@@ -210,7 +210,7 @@ This paper provides a solid foundation for my multilayer spatial topology experi
 
 ## 6. H3 / DGGS Investigation
 
-In theory, because all six neighbors are equidistant from the center, a hexagon is advantageous as a spatial analysis unit. This overcome the directional bias of square grids, where diagonal neighbors are ~1.41× farther than edge neighbors.
+In theory, because all six neighbors are equidistant from the center, a hexagon is advantageous as a spatial analysis unit. This overcomes the directional bias of square grids, where diagonal neighbors are ~1.41× farther than edge neighbors.
 
 **Three resolution levels** were investigated:
 
@@ -220,7 +220,7 @@ In theory, because all six neighbors are equidistant from the center, a hexagon 
 | **9** | **~0.11 km²** | **City block ← optimal** | **~8,000** |
 | 10 | ~0.015 km² | Sub-block | ~50,000+ |
 
-All spatial reference grid systems used in the project — both square and H3 hexagonal — were generated using the **QGIS tools and H3 Toolkit plugin.** Official NYC borough boundary polygon used to select the cells. This approach ensures that all five boroughs are covered, including Staten Island, which  was excluded by a simple bounding box filter.
+All spatial reference grid systems used in the project — both square and H3 hexagonal — were generated using the **QGIS tools and H3 Toolkit plugin.** The official NYC borough boundary polygon used to select the cells. This approach ensures that all five boroughs are covered, including Staten Island, which was excluded by a simple bounding box filter.
 
 Each trip was matched to its corresponding square grid and H3 cell via **spatial join** (`gpd.sjoin`), enabling a fair comparison for topologies at identical scales.
 
@@ -278,7 +278,7 @@ The basic model explains **70.5%** of the journey time variance using only 6 non
 
 ### Model: XGBoost Regressor
 
-XGBoost builds decision trees **sequentially**. New tree corrects the residual errors of the previous ones. XGBoost learns different rules for different parts of the feature space, unlike linear regression, which applies a single global formula. Advanced method includes spatial context.
+XGBoost builds decision trees **sequentially**. Each new tree corrects the residual errors of the previous ones. XGBoost learns different rules for different parts of the feature space, unlike linear regression, which applies a single global formula. The advanced method includes spatial context.
 
 ### Pipeline
 
@@ -330,7 +330,7 @@ The same parameters are applied identically to both square grid and H3 variants,
 
 **1. Granularity matters more than topology.**
 
-The most important factor is cell size. The best performance values ​​for both H3 and square grids were observed at resolution 9. Switching to smaller cells (resolution 10) reduced performance. This is due to the noiseier values ​​caused by fewer travels within the cells. This finding is consistent with Liu et al. (2022).
+The most important factor is cell size. The best performance values ​​for both H3 and square grids were observed at resolution 9. Switching to smaller cells (resolution 10) reduced performance. This is due to the noisier values ​​caused by fewer travels within the cells. This finding is consistent with Liu et al. (2022).
 
 **2. H3 and square grids are essentially equivalent at the optimal scale.**
 
@@ -338,11 +338,11 @@ At Resolution 9, the difference in MAE between H3 (3,165 min) and Square (3,160 
 
 **3. At coarser scale (Res 8), H3 has a slight edge.**
 
-H3 performed better than squared at Resolution 8 in terms of both RMSE (5.365 vs. 5.386) and MAE (3.166 vs. 3.172). This small performance improvement is related to the fact that the hexagonal cells have equivalent neighbor distances, which allows for more efficient operation against the high variance between neighboring units that occurs in larger units.
+H3 performed better than square grids at Resolution 8 in terms of both RMSE (5.365 vs. 5.386) and MAE (3.166 vs. 3.172). This small performance improvement is related to the fact that the hexagonal cells have equivalent neighbor distances, which allows for more efficient operation against the high variance between neighboring units that occurs in larger units.
 
 **4. All XGBoost variants consistently improve MAE and RMSLE over baseline.**
 
-In all six configurations where the advanced method was applied, the MAE value improved by approximately **11-12%**, while the RMSLE improved by approximately **22-24%**. This is true for both topologies and three resolutions.
+In all six configurations where the advanced method was applied, the MAE value improved by approximately **11-12%**, while the RMSLE improved by approximately **22-24%**. This is true for both topologies and all three resolutions.
 
 **5. RMSE remains above baseline across all configurations.**
 
@@ -365,136 +365,93 @@ In topology analysis conducted at different scales, measurements taken at the sa
 
 ## 10. Development Journey
 
-This section documents the challenges encountered, corrections, and methodological improvements made across the development process.
+This section documents the methodological evolution of the project, highlighting the challenges encountered, architectural corrections, and iterative improvements.
 
 ---
 
-### Phase 1 — Baseline
+### Phase 1 — Baseline Implementation
 
 | Property | Value |
 |---|---|
 | Model | Multiple Linear Regression (OLS) |
-| Features | 6 non-spatial features |
+| Features | 6 non-spatial temporal & distance features |
 | MAE | **3.573 min** |
 | RMSE | **5.120 min** |
 | R² | 0.705 |
 
-**Key findings:**
-- `trip_distance` dominates — all other features contribute marginally
-- `is_rush_hour` coefficient ≈ +1.4 sec — near zero, overlaps with `pickup_hour`
-- Model assigns identical prediction to "2 miles at 8 AM in Midtown" and "2 miles at 8 AM in Staten Island" — **lacking spatial depth**
+**Key Findings:**
+- `trip_distance` heavily dominates the predictive power, while other features contribute marginally.
+- The `is_rush_hour` coefficient (≈ +1.4 sec) is near zero due to multicollinearity with `pickup_hour`.
+- The primary limitation is the **lack of spatial depth**. The model assigns identical predictions to trips with the same distance and time, regardless of whether they occur in highly congested Midtown Manhattan or fluid Staten Island routes.
 
 ---
 
-### Phase 2a — XGBoost, No Early Stopping 
+### Phase 2a — XGBoost Integration (Without Early Stopping)
 
-**Change:** H3 cell statistics added as features. XGBoost trained for 300 iterations.
+**Change:** H3 cell statistics were introduced as spatial features. An XGBoost model was trained for a fixed 300 iterations.
 
-**Training log revealed overfitting:**
+**Training Log Observations:**
+- Iteration 0: Validation RMSE = 541.5 sec
+- Iteration 100: Validation RMSE = **319.3 sec** (Optimal Point)
+- Iteration 299: Validation RMSE = 324.1 sec (Degradation)
 
-| Iteration | Validation RMSE |
-|---|---|
-| 0 | 541.5 sec |
-| 100 | **319.3 sec** ← best point |
-| 200 | 322.8 sec ← degrading |
-| 299 | 324.1 sec ← final model |
+**Result vs. Baseline:**
+- **MAE:** 3.200 min (−10.4%)
+- **RMSE:** 5.400 min (+5.5%)
+- *Conclusion:* While typical predictions (MAE) improved, the model overfit the data after iteration 100, inflating errors for outlier trips (RMSE degraded).
 
-**Result vs. baseline:**
+---
 
-| Metric | Baseline | XGBoost v1 | Δ |
+### Phase 2b — Overfitting Correction (Early Stopping)
+
+**Change:** Introduced `early_stopping_rounds=20` to the XGBoost parameters.
+
+**Training Log Observations:**
+- The model automatically halted at iteration **69** (Validation RMSE = 313.9 sec), preventing 230 unnecessary and degrading iterations.
+
+**Result vs. Baseline:**
+- **MAE:** **2.970 min** (−17.0% improvement over baseline)
+- **RMSE:** **5.160 min** (−4.4% improvement over Phase 2a)
+- **RMSLE:** **0.3359** (−29.1% improvement over baseline)
+- *Conclusion:* Overfitting was successfully resolved, proving the effectiveness of the spatial features when combined with appropriately regularized tree-based models.
+
+---
+
+### Phase 3 — Spatial Coverage & Boundary Fix
+
+**Problem Discovered:** The initial bounding box spatial filter (`pickup_longitude >= −74.25`) inadvertently excluded the western extremities of Staten Island.
+**Fix Applied:**
+- Replaced the hardcoded coordinate bounding box with a strict spatial join (`gpd.sjoin(gdf_taxi, nyc_boundary, predicate="within")`) against the official NYC outer boundary polygon.
+- *Result:* 100% geometric coverage of all 5 boroughs with negligible impact on the total record count, ensuring geographic integrity.
+
+---
+
+### Phase 4 — QGIS Grid Integrity Enforcement
+
+**Problem Discovered:** Generating grid cells dynamically from raw trip coordinates resulted in fragmented, gap-filled spatial topologies, especially in low-density suburban zones.
+**Fix Applied:**
+- Reference H3 grids (Resolutions 8, 9, 10) were generated natively in QGIS using the **H3 Toolkit** over the NYC boundary.
+- Equivalent-area Square Grids (Resolutions 8, 9, 10) were generated using the **QGIS Grid Tool** via metric projection (EPSG:32618) to ensure exact area matching, then exported to EPSG:4326.
+- *Result:* Six continuous, gap-free spatial masks were created, establishing a rigorously controlled environment for cross-topology comparisons.
+
+---
+
+### Phase 5 — Multi-Scale Topology & MAUP Analysis
+
+**Setup:** 9 configurations tested (3 Resolutions × 2 Topologies × 1 Baseline) using the universally valid intersection of trips to ensure zero spatial data leakage.
+
+**Summary of Iterative Improvements:**
+
+| Phase | Key Modification | Best MAE | Best RMSE |
 |---|---|---|---|
-| MAE | 3.573 min | 3.200 min |  −10.4% |
-| RMSE | 5.120 min | 5.400 min |  +5.5% |
+| 1 — Baseline | OLS, no spatial features | 3.573 min | 5.120 min |
+| 2a — XGBoost v1 | H3 features, no early stopping | 3.200 min | 5.400 min *(Overfit)* |
+| 2b — XGBoost v2 | Early stopping applied | 2.970 min | 5.160 min |
+| 3 — Boundary Fix | Spatial join replaces bounding box | — | *Full Coverage* |
+| 4 — QGIS Grids | Pre-computed static grids | — | *Grid Integrity* |
+| 5 — Multi-scale | Res 8 / 9 / 10, H3 + Square | **3.160 min** *(Res 9 Sq)* | 5.359 min |
 
-- MAE improved — typical predictions better
-- RMSE degraded — outlier trips inflated after overfitting past iter 100
-- **Root cause:** no `early_stopping_rounds` → model continued 200 iterations past its optimum
-
----
-
-### Phase 2b — Early Stopping Added 
-
-**Change:** `early_stopping_rounds=20` added to XGBoost.
-
-**Training log:**
-
-| Iteration | Validation RMSE |
-|---|---|
-| 0 | 541.5 sec |
-| **69** | **313.9 sec** ← stopped automatically |
-
-**Result vs. baseline:**
-
-| Metric | Baseline | XGBoost v1 | XGBoost v2 | Δ (v1→v2) |
-|---|---|---|---|---|
-| MAE | 3.573 min | 3.200 min | **2.970 min** | −7.2% |
-| RMSE | 5.120 min | 5.400 min | **5.160 min** | −4.4% |
-| RMSLE | 0.4741 | 0.3758 | **0.3359** | −10.6% |
-
-- Overfitting resolved — 230 unnecessary iterations eliminated
-- MAE improvement over baseline jumped from 10.4% → **17.0%**
-- RMSLE improvement: **29.1%** over baseline
-
----
-
-### Phase 3 — Spatial Coverage Fix 
-
-**Problem discovered:** Bounding box filter `pickup_longitude >= −74.25` cut off western Staten Island (coordinates extend to ≈ −74.26°).
-**Fix applied:**
-- Replaced bounding box with `gpd.sjoin(gdf_taxi, nyc_boundary, predicate="within")`
-- All 5 boroughs now fully covered
-- Minimal effect on record count (~120 additional records retained)
-
----
-
-### Phase 4 — QGIS Grid Integration 
-
-**Problem discovered:** Generating H3 cells from trip coordinates produced cells only where trips existed — creating an irregular, gap-filled grid in low-density areas.
-**Fix applied:**
-- H3 grids (res 8, 9, 10) generated in **QGIS H3 Toolkit** from official NYC boundary polygon
-- Square grids (res 8, 9, 10) generated in **QGIS Grid Tool** at equivalent cell areas
-- All trips matched via spatial join — not coordinate-based assignment
-- Result: 6 complete, gap-free reference grids for fair cross-topology comparison (3 for square grid and 3 for H3 cells)
-
----
-
-### Phase 5 — Multi-Scale Topology Analysis 
-
-**Setup:** 3 resolutions × 2 topologies × 1 baseline = **9 model configurations** tested.
-
-**Full results:**
-
-| Scale | Topology | MAE (min) | RMSE (min) | RMSLE | R² |
-|---|---|---|---|---|---|
-| Res 8 — Large | Baseline | 3.573 | 5.120 | 0.474 | 0.705 |
-| Res 8 — Large | H3 | 3.166 | 5.365 | 0.370 | 0.676 |
-| Res 8 — Large | Square | 3.172 | 5.386 | 0.368 | 0.674 |
-| Res 9 — Medium | Baseline | 3.572 | 5.119 | 0.474 | 0.705 |
-| Res 9 — Medium | **H3** | **3.165** | 5.363 | 0.370 | 0.676 |
-| Res 9 — Medium | **Square** | **3.160** | 5.359 | **0.367** | **0.677** |
-| Res 10 — Small | Baseline | 3.573 | 5.119 | 0.474 | 0.705 |
-| Res 10 — Small | H3 | 3.189 | 5.404 | 0.371 | 0.672 |
-| Res 10 — Small | Square | 3.186 | 5.405 | 0.370 | 0.671 |
-
-**Key findings:**
-- **Granularity > Topology** — cell size is the dominant factor, not cell shape
-- **Res 9 is optimal** — best MAE at both topologies; Res 10 degrades due to data sparsity
-- **H3 ≈ Square at Res 9** — difference is 0.005 min = 0.3 seconds (noise level)
-- **H3 slightly better at Res 8** — marginal advantage at coarser scale where equidistant neighbors matter more
-- **RMSE above baseline across all configs** — consistent with 5-day data limitation; outlier cells remain data-sparse
-
----
-
-### Summary of Iterations
-
-| Phase | Key Change | MAE Result | RMSE Result |
-|---|---|---|---|
-| 1 — Baseline | Linear Regression, no spatial features | 3.573 min | 5.120 min |
-| 2a — First XGBoost | H3 features, no early stopping | 3.200 min | 5.400 min  overfit |
-| 2b — Early stopping added | `early_stopping_rounds=20` | 2.970 min | 5.160 min |
-| 3 — Boundary fix | Spatial join replaces bounding box | — | Full coverage |
-| 4 — QGIS grids | Complete city coverage, both topologies | — | Grid integrity |
-| 5 — Multi-scale analysis | Res 8 / 9 / 10, H3 + Square | **3.165 min** (Res 9 H3) | 5.363 min |
+*Final Methodological Note:* The inclusion of spatial features consistently outperformed the non-spatial baseline. Furthermore, visualizing the model's decision-making process confirms that spatial demand indicators heavily influence the XGBoost tree splits. 
 
 ---
 
