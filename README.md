@@ -146,23 +146,14 @@ target = 'trip_duration'  # seconds
 
 ## 5. Literature Review
 
-> Scopus literature review — 5 papers reviewed. All required criteria satisfied.
+> Scopus literature review
 
 ---
 
 ### Article 1 — Roy & Rout (2022)
 
-> ✅ Published after 2020
-
 **Title:** Predicting Taxi Journey Time Using Machine Learning Techniques
 Considering Weekends and Holidays
-
-**Authors:** Roy, B., Rout, D.
-
-**Journal:** *Lecture Notes in Networks and Systems*, Vol. 417, pp. 258–267.
-Springer (2022)
-
-**DOI:** [10.1007/978-3-030-96302-6_24](https://doi.org/10.1007/978-3-030-96302-6_24)
 
 **Dataset and Setup:**
 This study uses **January 2015 NYC Yellow Cab records** alongside Uber trip
@@ -208,17 +199,8 @@ contributions.
 
 ### Article 2 — Wang et al. (2019)
 
-> ✅ More than 20 citations
-
 **Title:** A Simple Baseline for Travel Time Estimation Using Large-Scale
 Trip Data
-
-**Authors:** Wang, H., Tang, X., Kuo, Y.-H., Kifer, D., Li, Z.
-
-**Journal:** *ACM Transactions on Intelligent Systems and Technology*,
-Vol. 10(2), Article 19 (2019)
-
-**DOI:** [10.1145/3293317](https://doi.org/10.1145/3293317)
 
 **Dataset and Setup:**
 The study uses 173 million NYC taxi trips from the Taxi and Limousine
@@ -265,17 +247,8 @@ characteristics produces more informative features than raw coordinates alone.
 
 ### Article 3 — Safikhani et al. (2020)
 
-> ✅ More than 20 citations
-
 **Title:** Spatio-Temporal Modeling of Yellow Taxi Demands in New York City
 Using Generalized STAR Models
-
-**Authors:** Safikhani, A., Kamga, C., Mudigonda, S., Faghih, S.S., Moghimi, B.
-
-**Journal:** *International Journal of Forecasting*, Vol. 36(3), pp. 1138–1148
-(2020)
-
-**DOI:** [10.1016/j.ijforecast.2018.10.001](https://doi.org/10.1016/j.ijforecast.2018.10.001)
 
 **Dataset and Setup:**
 This study uses the **2015 NYC Yellow Taxi dataset** — the exact same source
@@ -326,17 +299,7 @@ and borough-level spillover effects — are directly present in our training dat
 
 ### Article 4 — Poongodi et al. (2022)
 
-> ✅ Published after 2020 | ✅ More than 20 citations (84 citations)
-
 **Title:** New York City Taxi Trip Duration Prediction Using MLP and XGBoost
-
-**Authors:** Poongodi, M., Malviya, M., Kumar, C., Hamdi, M., Vijayakumar,
-V., Nebhen, J., Alyamani, H.
-
-**Journal:** *International Journal of System Assurance Engineering and
-Management*, Vol. 13(Suppl 1), pp. 16–27 (2022)
-
-**DOI:** [10.1007/s13198-021-01130-x](https://doi.org/10.1007/s13198-021-01130-x)
 
 **Dataset and Setup:**
 The study applies machine learning directly to **NYC taxi trip duration
@@ -383,17 +346,8 @@ enabling direct cross-study comparison.
 
 ### Article 5 — Liu et al. (2022)
 
-> ✅ Published after 2020
-
 **Title:** Exploring the Impact of Spatiotemporal Granularity on the Demand
 Prediction of Dynamic Ride-Hailing
-
-**Authors:** Liu, K., Chen, Z., Yamamoto, T., Tuo, L.
-
-**Journal:** *IEEE Transactions on Intelligent Transportation Systems*,
-Vol. 24, pp. 104–114 (2022)
-
-**DOI:** [10.1109/TITS.2022.3216016](https://doi.org/10.1109/TITS.2022.3216016)
 
 **Dataset and Setup:**
 The study uses real-world ride-hailing data from Chengdu, China. While the
@@ -439,21 +393,9 @@ the primary analysis unit.
 
 ---
 
-### Literature Review Summary
-
-| # | Authors | Year | Journal | Method | Dataset | Criteria |
-|---|---|---|---|---|---|---|
-| P1 | Roy & Rout | 2022 | Springer LNNS | RF, KNN, DT | **Jan 2015 NYC** | >2020 ✅ |
-| P2 | Wang et al. | 2019 | ACM TIST | Neighbor-based estimator | NYC (173M trips) | >20 citations ✅ |
-| P3 | Safikhani et al. | 2020 | Int. J. Forecasting | STAR (spatial autoregressive) | **2015 NYC** | >20 citations ✅ |
-| P4 | Poongodi et al. | 2022 | IJSAEM Springer | **XGBoost, MLP** | NYC taxi | >2020 ✅, >20 citations ✅ |
-| P5 | Liu et al. | 2022 | IEEE T-ITS | H-ConvLSTM + multi-scale grid | Ride-hailing | >2020 ✅ |
-
----
-
 ## 6. H3 / DGGS Investigation
 
-A hexagon is theoretically advantageous as a spatial analysis unit because all six neighbors are equidistant from the cell center. This eliminates the directional bias present in square grids, where diagonal neighbors are ~1.41× farther than edge neighbors. H3 cells also have consistent area at each resolution level, enabling hierarchical multi-scale analysis.
+In theory, because all six neighbors are equidistant from the center, a hexagon is advantageous as a spatial analysis unit. This overcome the directional bias of square grids, where diagonal neighbors are ~1.41× farther than edge neighbors.
 
 **Three resolution levels** were investigated:
 
@@ -463,9 +405,9 @@ A hexagon is theoretically advantageous as a spatial analysis unit because all s
 | **9** | **~0.11 km²** | **City block ← optimal** | **~8,000** |
 | 10 | ~0.015 km² | Sub-block | ~50,000+ |
 
-All spatial reference grids — both H3 hexagonal and square — were generated using the **QGIS H3 Toolkit and grid generation plugins** from the official NYC borough boundary polygon. This approach ensures complete and seamless city coverage across all five boroughs, including Staten Island, which a simple bounding box filter would partially exclude.
+All spatial reference grid systems used in the project — both square and H3 hexagonal — were generated using the **QGIS tools and H3 Toolkit plugin.** Official NYC borough boundary polygon used to select the cells. This approach ensures that all five boroughs are covered, including Staten Island, which  was excluded by a simple bounding box filter.
 
-Each trip was matched to its corresponding H3 and square grid cell via **spatial join** (`gpd.sjoin`), enabling a fair apples-to-apples comparison between topologies at identical scales.
+Each trip was matched to its corresponding square grid and H3 cell via **spatial join** (`gpd.sjoin`), enabling a fair comparison for topologies at identical scales.
 
 [Interactive Heatmap](https://aakcaya.github.io/nyc-taxi-spatio-temporal/h3_map.html)
 
