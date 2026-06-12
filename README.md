@@ -116,7 +116,9 @@ MAE was choosen as the primary metric. It measures its prediction error without 
 
 ### Model: Multiple Linear Regression (OLS)
 
-The baseline method is a simple, interpretable algorithm that defines the minimum performance level against which all advanced methods are compared.
+In data mining, the baseline method is a simple, interpretable algorithm that defines the minimum performance baseline against which advanced methods are compared.
+
+**The chosen baseline method:** Ordinary Least Squares (OLS) Linear Regression — the simplest parametric model possible for a regression task.
 
 ### Input Features
 
@@ -132,7 +134,7 @@ features = [
 target = 'trip_duration'  # seconds
 ```
 
-> No spatial features are used at this stage. Coordinates serve only to compute `trip_distance`.
+> No spatial features needed for this stage. Coordinates used only to find out `trip_distance`.
 
 ### Why Linear Regression as the Baseline?
 
