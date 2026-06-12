@@ -2,8 +2,7 @@
 
 > **DI 722 – Spatio-Temporal Data Mining | 2025-26 Spring | Final Project**
 
-[![Open In Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://www.kaggle.com/code/umutcemkartal/advanced-method)
-
+[[![Open In Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://www.kaggle.com/code/umutcemkartal/advanced-method)]
 ## Table of Contents
 
 1. [Introduction & Motivation](#1-introduction--motivation)
@@ -31,12 +30,12 @@ New York City's yellow taxi network is one of the world's richest urban mobility
 
 ### Research Question
 
-> *Can we accurately predict NYC taxi trip duration, and does incorporating spatial grid features improve upon a non-spatial baseline — and if so, does cell topology (hexagonal vs. square) or cell granularity matter more?*
+> *Can we accurately predict NYC taxi trip duration, and does applied spatial grid features improve upon a non-spatial baseline — and if so, does cell granularity or cell type (hexagonal vs. square) matter more?*
 
 This project approaches the problem in two stages:
 
-- **Stage 1:** Linear regression baseline using trip-level features only.
-- **Stage 2:** XGBoost enriched with spatial features derived from H3 hexagonal and square grids at three resolution levels.
+- **Stage 1:** Linear regression baseline with using only trip-level features.
+- **Stage 2:** XGBoost method, enriched with spatial features which derived from square grids and H3 hexagonal at three different resolution levels.
 
 ---
 
@@ -52,7 +51,6 @@ Data Provided By: Taxi and Limousine Commission (TLC)
 | Average Total Trips Per Day | 365,000 |
 | Temporal Coverage | January 1 – January 5, 2015 |
 | Number of Columns | 20 |
-| Records After Cleaning | ~1,772,000 |
 
 ### Schema (Key Fields)
 
@@ -109,7 +107,8 @@ Raw CSV Preprocessing
 | **Target** | `trip_duration` — total trip duration in seconds |
 | **Evaluation Metrics** | MAE (primary), RMSE, RMSLE, R² |
 
-MAE is used as the primary metric: it measures typical per-trip prediction error without being disproportionately inflated by outlier trips.
+Travel time is a continuous numerical variable. Regression allows for a direct interpretation of the true margin of error (MAE, RMSE) in seconds.
+MAE was choosen as the primary metric. It measures its prediction error without being widely inflated by outliers.
 
 ---
 
@@ -153,15 +152,55 @@ target = 'trip_duration'  # seconds
 
 > ✅ Published after 2020
 
-**Title:** Predicting Taxi Journey Time Using Machine Learning Techniques Considering Weekends and Holidays
+**Title:** Predicting Taxi Journey Time Using Machine Learning Techniques
+Considering Weekends and Holidays
 
 **Authors:** Roy, B., Rout, D.
 
-**Journal:** *Lecture Notes in Networks and Systems*, Vol. 417, pp. 258–267. Springer (2022)
+**Journal:** *Lecture Notes in Networks and Systems*, Vol. 417, pp. 258–267.
+Springer (2022)
 
 **DOI:** [10.1007/978-3-030-96302-6_24](https://doi.org/10.1007/978-3-030-96302-6_24)
 
-This study uses **January 2015 NYC Yellow Cab records** — the same dataset used in this project. Chi-Square feature selection identifies pickup/dropoff coordinates, time, day of week, and passenger count as the most informative variables. Decision Tree, Random Forest, and KNN Regression are compared; both Random Forest and KNN exceed the Kaggle benchmark for this dataset. The study confirms that temporal variables such as `is_weekend` carry meaningful signal, and that tree-based models capture nonlinear feature interactions that linear regression cannot model. This directly motivates the transition to XGBoost in our advanced stage.
+**Dataset and Setup:**
+This study uses **January 2015 NYC Yellow Cab records** alongside Uber trip
+data — the same primary dataset as this project. Feature selection was
+performed using Chi-Square scoring, which ranks features by their statistical
+dependence on the target variable. The selected features include pickup and
+dropoff coordinates, time of day, day of week, and passenger count.
+
+**Models Applied:**
+Three models were compared:
+
+- **Decision Tree Regression (DTR):** Splits the data recursively based on
+  feature thresholds. Interpretable, but prone to overfitting on training data.
+- **Random Forest Regression (RFR):** An ensemble of hundreds of independently
+  trained decision trees, each trained on a random subset of the data. Averaging
+  their predictions reduces variance and overfitting. A genuine machine learning
+  model with a real training process.
+- **K-Nearest Neighbor Regression (KNNR):** For a new trip, finds the K most
+  similar historical trips in the feature space and returns their average
+  duration. No training phase — the data itself acts as the model. Similarity
+  is measured by Euclidean distance in the feature vector space, not geographic
+  distance.
+
+**Results:**
+Both RFR and KNNR exceeded the Kaggle benchmark established for the NYC taxi
+trip duration prediction task. The paper hierarchically demonstrates that more
+sophisticated models improve upon simpler ones, and explicitly quantifies the
+contribution of weekend and holiday flags to prediction accuracy.
+
+**Relevance to This Project:**
+This paper provides the most direct methodological parallel to our work —
+same dataset, same prediction task, overlapping feature set. The confirmed
+superiority of tree-based methods over linear models on this specific dataset
+is the primary motivation for choosing XGBoost in our advanced stage. The
+paper also validates our use of `is_weekend` and `is_rush_hour` as binary
+temporal features, and demonstrates that the performance gap between linear
+and tree-based models is attributable to the latter's ability to capture
+nonlinear interactions — for example, the combined effect of peak hour and
+high-density pickup zones that linear regression treats as independent additive
+contributions.
 
 ---
 
@@ -169,15 +208,56 @@ This study uses **January 2015 NYC Yellow Cab records** — the same dataset use
 
 > ✅ More than 20 citations
 
-**Title:** A Simple Baseline for Travel Time Estimation Using Large-Scale Trip Data
+**Title:** A Simple Baseline for Travel Time Estimation Using Large-Scale
+Trip Data
 
 **Authors:** Wang, H., Tang, X., Kuo, Y.-H., Kifer, D., Li, Z.
 
-**Journal:** *ACM Transactions on Intelligent Systems and Technology*, Vol. 10(2), Article 19 (2019)
+**Journal:** *ACM Transactions on Intelligent Systems and Technology*,
+Vol. 10(2), Article 19 (2019)
 
 **DOI:** [10.1145/3293317](https://doi.org/10.1145/3293317)
 
-Using 173 million NYC taxi trips, this paper proposes a neighbor-based estimator: for a new trip from A to B at time T, find all historical trips with a similar origin zone, destination zone, and hour, then return their average duration. This simple approach outperforms both Bing Maps and Baidu Maps API estimates. The key argument — that **region-level spatial statistics drive prediction accuracy**, not raw coordinates — is the conceptual foundation for our H3 and square grid cell features.
+**Dataset and Setup:**
+The study uses 173 million NYC taxi trips from the Taxi and Limousine
+Commission — the same data source, at far larger volume. The research
+question is deliberately counterintuitive: rather than asking which complex
+algorithm performs best, it asks whether a well-designed simple method powered
+by large data can match or exceed complex models.
+
+**Model Applied:**
+The proposed method is a **neighbor-based estimator** — not a machine learning
+model in the traditional sense. For a new trip from origin zone A to destination
+zone B at hour T, the system retrieves all historical trips with the same origin
+zone, destination zone, and hour bucket, then returns their average duration
+as the prediction. No parameters are learned; the historical data is the model.
+
+This approach differs fundamentally from KNN regression despite a superficial
+resemblance. KNN measures similarity in raw feature space — treating coordinates
+as plain numbers — and finds similar trips globally across the entire dataset.
+The neighbor-based estimator first converts coordinates into predefined
+geographic zones, then searches only within matching zone pairs. The similarity
+criterion is geographic membership, not numerical distance. This distinction is
+crucial: the zone-level approach explicitly encodes spatial structure, while KNN
+only approximates it numerically.
+
+**Results:**
+The method outperforms both Bing Maps and Baidu Maps API travel time estimates
+on out-of-sample NYC trips. The authors argue that this result holds because
+the method captures the joint distribution of origin, destination, and time —
+exactly the structure that matters for urban travel time.
+
+**Relevance to This Project:**
+This paper provides the conceptual foundation for our spatial feature
+engineering strategy. The key insight — that region-level statistics, not raw
+coordinates, drive prediction accuracy — is directly implemented in our
+`cell_trip_count` and `cell_mean_duration` features. When we assign each trip
+to an H3 or square grid cell and attach that cell's historical statistics, we
+are operationalizing the same principle: replacing coordinate-level specificity
+with zone-level distributional knowledge. The paper also justifies why both
+H3 and square grid cells improve prediction over the non-spatial baseline —
+any consistent spatial partitioning that groups trips with similar origin
+characteristics produces more informative features than raw coordinates alone.
 
 ---
 
@@ -185,15 +265,60 @@ Using 173 million NYC taxi trips, this paper proposes a neighbor-based estimator
 
 > ✅ More than 20 citations
 
-**Title:** Spatio-Temporal Modeling of Yellow Taxi Demands in New York City Using Generalized STAR Models
+**Title:** Spatio-Temporal Modeling of Yellow Taxi Demands in New York City
+Using Generalized STAR Models
 
 **Authors:** Safikhani, A., Kamga, C., Mudigonda, S., Faghih, S.S., Moghimi, B.
 
-**Journal:** *International Journal of Forecasting*, Vol. 36(3), pp. 1138–1148 (2020)
+**Journal:** *International Journal of Forecasting*, Vol. 36(3), pp. 1138–1148
+(2020)
 
 **DOI:** [10.1016/j.ijforecast.2018.10.001](https://doi.org/10.1016/j.ijforecast.2018.10.001)
 
-This study uses the **2015 NYC Yellow Taxi dataset** to model taxi demand via Generalized Space-Time Autoregressive (STAR) models. The central finding is that demand in one zone is correlated with demand in neighboring zones — ignoring this spatial dependency degrades forecast accuracy. STAR outperforms ARMA and VAR. This directly motivates the `cell_mean_duration` and neighbor-based spatial features in our advanced method, which implement the same spatial dependency principle using both H3 and square grids.
+**Dataset and Setup:**
+This study uses the **2015 NYC Yellow Taxi dataset** — the exact same source
+as this project. The prediction task is different from ours: the authors
+forecast **taxi demand** (trip count per zone per time period) rather than
+individual trip duration. This distinction matters for interpretation but the
+spatial methodology is directly applicable.
+
+**Model Applied:**
+The proposed model is a **Generalized Space-Time AutoRegressive (STAR)** model.
+Classical time series models such as ARMA assume that a zone's future demand
+depends only on its own past. STAR extends this by adding a **spatial lag
+term**: demand in zone A at time T is modeled as a function of both A's own
+history and the recent demand of A's geographic neighbors, weighted by
+proximity.
+
+Formally: Demand(zone A, t) = φ₁·Demand(zone A, t−1)
+
++ λ·Σⱼ wⱼ·Demand(neighbor j, t−1) + ε
+where `wⱼ` is the spatial weight assigned to neighbor `j`. Because the number
+of parameters grows very large with many zones, **LASSO regularization** is
+applied to shrink irrelevant spatial coefficients to zero, retaining only
+the strongest neighborhood relationships.
+
+This is a statistical model, not a machine learning model — it assumes linear
+spatial relationships and requires a predefined weight matrix. It cannot capture
+nonlinear interactions between features.
+
+**Results:**
+STAR outperforms both ARMA and VAR on out-of-sample demand forecasting across
+NYC taxi zones. The improvement is largest in high-density, high-spillover
+zones such as Midtown Manhattan, where neighboring zone activity strongly
+predicts local demand.
+
+**Relevance to This Project:**
+This paper provides the theoretical justification for our neighbor-based
+spatial features (`neighbor_avg_demand`, k-ring averaging). The STAR model
+formally demonstrates that a zone's behavior is shaped by its geographic
+neighbors — ignoring this spatial dependency degrades forecast quality.
+Our implementation translates this insight into a simpler but effective
+feature engineering step: for each pickup cell, the average historical demand
+of its k=1 surrounding cells is computed from the training set and attached
+as a model input. The use of the 2015 NYC dataset also means the spatial
+demand patterns documented in this paper — including the Midtown dominance
+and borough-level spillover effects — are directly present in our training data.
 
 ---
 
@@ -203,13 +328,54 @@ This study uses the **2015 NYC Yellow Taxi dataset** to model taxi demand via Ge
 
 **Title:** New York City Taxi Trip Duration Prediction Using MLP and XGBoost
 
-**Authors:** Poongodi, M., Malviya, M., Kumar, C., Hamdi, M., Vijayakumar, V., Nebhen, J., Alyamani, H.
+**Authors:** Poongodi, M., Malviya, M., Kumar, C., Hamdi, M., Vijayakumar,
+V., Nebhen, J., Alyamani, H.
 
-**Journal:** *International Journal of System Assurance Engineering and Management*, Vol. 13(Suppl 1), pp. 16–27 (2022)
+**Journal:** *International Journal of System Assurance Engineering and
+Management*, Vol. 13(Suppl 1), pp. 16–27 (2022)
 
 **DOI:** [10.1007/s13198-021-01130-x](https://doi.org/10.1007/s13198-021-01130-x)
 
-This study applies XGBoost and MLP to NYC taxi trip duration prediction with a feature set closely mirroring ours. XGBoost is found to balance computational efficiency and accuracy effectively. The study confirms that `trip_distance` is the overwhelmingly dominant predictor on NYC taxi data — a structural characteristic that our results reproduce — and that nonlinear tree-based methods consistently outperform linear regression. Serves as the primary benchmark for our XGBoost implementation.
+**Dataset and Setup:**
+The study applies machine learning directly to **NYC taxi trip duration
+prediction** — the same task as this project — using features including
+pickup/dropoff coordinates, trip distance, start time, and passenger count.
+The problem framing, feature set, and evaluation approach closely mirror ours.
+
+**Models Applied:**
+
+- **XGBoost (Extreme Gradient Boosting):** Builds decision trees sequentially,
+  with each tree correcting the residual errors of the previous ensemble. The
+  "gradient boosting" mechanism minimizes a differentiable loss function
+  iteratively. XGBoost adds regularization terms to the standard gradient
+  boosting formulation, controlling tree complexity and reducing overfitting.
+  Unlike Random Forest (which builds trees in parallel on random data subsets),
+  XGBoost builds trees in sequence, with each one explicitly targeting the
+  errors of the current ensemble.
+
+- **Multi-Layer Perceptron (MLP):** A feedforward neural network with multiple
+  hidden layers. The network learns nonlinear transformations of the input
+  features through weighted connections and activation functions, optimized
+  via backpropagation. More flexible than tree-based models but requires
+  careful architecture design and more computational resources.
+
+**Results:**
+XGBoost achieved competitive RMSLE compared to MLP, with significantly lower
+computational cost and training time. The study confirms that `trip_distance`
+is the overwhelmingly dominant predictor across all models on NYC taxi data —
+a structural characteristic of the dataset. Both models substantially
+outperform linear regression.
+
+**Relevance to This Project:**
+This paper is the most direct benchmark for our advanced method. The
+confirmation that `trip_distance` dominates feature importance (which we
+independently observe at 79.5% in our feature importance analysis) validates
+this as a dataset characteristic rather than a modeling artifact. The study
+also demonstrates XGBoost's practical advantages over more complex architectures
+like MLP for this task: competitive accuracy with lower training cost and
+better interpretability via feature importance scores. The RMSLE metric used
+in their evaluation aligns with our own choice of RMSLE as a secondary metric,
+enabling direct cross-study comparison.
 
 ---
 
@@ -217,27 +383,69 @@ This study applies XGBoost and MLP to NYC taxi trip duration prediction with a f
 
 > ✅ Published after 2020
 
-**Title:** Exploring the Impact of Spatiotemporal Granularity on the Demand Prediction of Dynamic Ride-Hailing
+**Title:** Exploring the Impact of Spatiotemporal Granularity on the Demand
+Prediction of Dynamic Ride-Hailing
 
 **Authors:** Liu, K., Chen, Z., Yamamoto, T., Tuo, L.
 
-**Journal:** *IEEE Transactions on Intelligent Transportation Systems*, Vol. 24, pp. 104–114 (2022)
+**Journal:** *IEEE Transactions on Intelligent Transportation Systems*,
+Vol. 24, pp. 104–114 (2022)
 
 **DOI:** [10.1109/TITS.2022.3216016](https://doi.org/10.1109/TITS.2022.3216016)
 
-This paper systematically investigates how cell size and time interval length affect ride-hailing demand prediction accuracy. Using real-world data and a hexagonal ConvLSTM model, the study compares 36 granularity combinations. Key findings: hexagonal cells outperform square cells due to equidistant neighbors; prediction accuracy is highly sensitive to cell size — too coarse loses local variation, too fine produces data-sparse cells with unreliable statistics. The optimal granularity maps approximately to H3 resolution 8–9. Our multi-scale analysis (Res 8, 9, 10) directly tests this hypothesis and confirms resolution 9 as optimal.
+**Dataset and Setup:**
+The study uses real-world ride-hailing data from Chengdu, China. While the
+city differs from NYC, the methodological question is directly transferable:
+**how does the choice of spatial partition granularity and topology affect
+prediction quality?** The authors test 36 combinations of cell size and time
+interval length — a systematic grid search over the granularity parameter space.
+
+**Model Applied:**
+The proposed model is a **Hexagonal Convolutional LSTM (H-ConvLSTM)**, which
+combines spatial convolution operations with temporal sequence modeling.
+The convolutional component aggregates signals from neighboring hexagonal cells;
+the LSTM component captures temporal dependencies across time steps. This
+architecture treats the spatial grid as a graph rather than a flat feature
+vector, allowing neighborhood information to propagate through the model
+architecture itself rather than through manually engineered features.
+
+The comparison with square grids at identical cell areas is embedded in
+the experimental design: both hexagonal and rectangular partitions are
+tested at the same spatial scale, isolating the effect of topology from
+granularity.
+
+**Results:**
+Hexagonal partitions consistently outperform square partitions at equivalent
+cell areas, attributed to the equidistant-neighbor property of hexagons which
+reduces directional bias in spatial aggregation. The optimal granularity
+corresponds to a cell side length of approximately 800m, which maps to
+H3 resolution 8–9. Crucially, performance degrades at both extremes:
+too-coarse cells lose local variation, too-fine cells produce sparse demand
+signals that introduce noise rather than information.
+
+**Relevance to This Project:**
+This paper directly motivates our multi-scale topology comparison. The finding
+that granularity dominates topology is exactly what our results confirm:
+both H3 and square grids perform best at Resolution 9, and degradation at
+Resolution 10 is consistent with the data-sparsity effect documented by the
+authors. The marginal advantage of H3 over square at Resolution 8 that we
+observe is also consistent with their finding that hexagonal advantage is
+more pronounced at coarser scales where inter-cell directional bias matters
+more. Importantly, the paper's result that optimal cell size aligns with
+H3 resolution 8–9 retrospectively validates our choice of Resolution 9 as
+the primary analysis unit.
 
 ---
 
 ### Literature Review Summary
 
-| # | Authors | Year | Journal | Method | NYC Data | Criteria |
+| # | Authors | Year | Journal | Method | Dataset | Criteria |
 |---|---|---|---|---|---|---|
-| P1 | Roy & Rout | 2022 | Springer LNNS | RF, KNN, DT | **Jan 2015 NYC** ✅ | >2020 ✅ |
-| P2 | Wang et al. | 2019 | ACM TIST | Neighbor-based | NYC (173M) ✅ | >20 citations ✅ |
-| P3 | Safikhani et al. | 2020 | Int. J. Forecasting | STAR | **2015 NYC** ✅ | >20 citations ✅ |
-| P4 | Poongodi et al. | 2022 | IJSAEM / Springer | **XGBoost, MLP** | NYC taxi ✅ | >2020 ✅, >20 citations ✅ |
-| P5 | Liu et al. | 2022 | IEEE T-ITS | H-ConvLSTM + hex grid | Ride-hailing ✅ | >2020 ✅ |
+| P1 | Roy & Rout | 2022 | Springer LNNS | RF, KNN, DT | **Jan 2015 NYC** | >2020 ✅ |
+| P2 | Wang et al. | 2019 | ACM TIST | Neighbor-based estimator | NYC (173M trips) | >20 citations ✅ |
+| P3 | Safikhani et al. | 2020 | Int. J. Forecasting | STAR (spatial autoregressive) | **2015 NYC** | >20 citations ✅ |
+| P4 | Poongodi et al. | 2022 | IJSAEM Springer | **XGBoost, MLP** | NYC taxi | >2020 ✅, >20 citations ✅ |
+| P5 | Liu et al. | 2022 | IEEE T-ITS | H-ConvLSTM + multi-scale grid | Ride-hailing | >2020 ✅ |
 
 ---
 
